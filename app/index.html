@@ -349,8 +349,76 @@
   .backup-banner b { color: var(--text); }
   .backup-banner button { background: var(--red); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
 
+  /* ══════════ ACCOUNT MENU (bottom-left) + SETTINGS PAGE ══════════ */
+  .avatar { border-radius: 50%; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; overflow: hidden; flex-shrink: 0; font-family: 'Inter', sans-serif; user-select: none; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .av-sm { width: 38px; height: 38px; font-size: 15px; }
+  .av-lg { width: 92px; height: 92px; font-size: 36px; border: 1px solid var(--card-border); }
+
+  .acct-btn {
+    position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 150;
+    width: 46px; height: 46px; padding: 0; font-size: 17px; cursor: pointer;
+    border: 2px solid var(--card-border); box-shadow: 0 4px 14px rgba(var(--shadow),0.25); display: none;
+  }
+  .acct-btn.show { display: flex; }
+  .acct-btn:hover, .acct-btn[aria-expanded="true"] { border-color: var(--red); }
+  .acct-btn:focus-visible, .acct-item:focus-visible, .sp-nav button:focus-visible, .sp-icon-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+  .acct-menu {
+    position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: calc(max(16px, env(safe-area-inset-bottom)) + 56px); z-index: 151;
+    width: 264px; max-width: calc(100vw - 24px); padding: 6px; display: none;
+    background: var(--surface); border: 1px solid var(--card-border); border-radius: 10px; box-shadow: 0 12px 36px rgba(var(--shadow),0.22);
+  }
+  .acct-menu.open { display: block; animation: fadeIn .15s ease; }
+  .acct-who { display: flex; align-items: center; gap: 10px; padding: 10px 10px 12px; margin-bottom: 6px; border-bottom: 1px solid var(--card-border); }
+  .acct-who-text { min-width: 0; }
+  .acct-who .nm { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acct-who .un { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acct-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; background: transparent; border: none; border-radius: 6px; color: var(--text); font: 600 13px 'Inter', sans-serif; text-align: left; cursor: pointer; }
+  .acct-item:hover { background: var(--surface-2); }
+  .acct-item svg { color: var(--muted); flex-shrink: 0; }
+  @media (max-width: 640px) { .acct-btn { width: 40px; height: 40px; font-size: 15px; left: 10px; bottom: 10px; } .acct-menu { left: 10px; bottom: 58px; } }
+
+  .sp { display: none; position: fixed; inset: 0; z-index: 800; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .sp.open { display: block; animation: fadeIn .2s ease; }
+  .sp-top { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 14px; padding: 12px 20px; background: linear-gradient(135deg,var(--surface),var(--surface-2)); border-bottom: 3px solid var(--red); }
+  .sp-top .btn { display: inline-flex; align-items: center; gap: 8px; }
+  .sp-wrap { max-width: 1040px; margin: 0 auto; padding: 26px 20px 90px; }
+  .sp-crumb { font-size: 12px; color: var(--muted); }
+  .sp-title { margin: 6px 0 6px; font-size: 30px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); outline: none; }
+  .sp-sub { margin: 0 0 26px; font-size: 13px; line-height: 1.6; color: var(--muted); max-width: 58ch; }
+  .sp-body { display: grid; grid-template-columns: 210px minmax(0,1fr); gap: 26px; align-items: start; }
+  .sp-nav { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 86px; }
+  .sp-nav button { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--muted); font: 600 13px 'Inter', sans-serif; text-align: left; cursor: pointer; white-space: nowrap; }
+  .sp-nav button:hover { color: var(--text); background: var(--surface-2); }
+  .sp-nav button[aria-selected="true"] { background: var(--red); color: #fff; }
+  .sp-panel { display: none; }
+  .sp-panel.active { display: block; animation: fadeIn .2s ease; }
+  .sp-photo { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; }
+  .sp-photo-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sp-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--input-border); border-radius: 4px; background: var(--input-bg); color: var(--red-text); cursor: pointer; }
+  .sp-icon-btn:hover { border-color: var(--red); }
+  .sp-hint { font-size: 11.5px; line-height: 1.6; color: var(--muted); margin-top: 6px; }
+  .sp-photo .sp-hint { flex-basis: 100%; margin-top: 2px; }
+  .sp-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 16px; }
+  .sp-msg { font-size: 12.5px; line-height: 1.5; min-height: 18px; }
+  .sp-msg.ok { color: var(--green); }
+  .sp-msg.err { color: var(--red-text); }
+  .sp-readonly { color: var(--muted); cursor: default; }
+  .sp-tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px; font-size: 9px; letter-spacing: 1px; border: 1px solid; vertical-align: 1px; }
+  .sp-tag.ok { color: var(--green); border-color: rgba(22,128,60,0.4); }
+  .sp-tag.warn { color: var(--amber); border-color: rgba(161,92,0,0.4); }
+  .sp-soon { padding: 6px 0 2px; font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 56ch; }
+  .sp-lock { background: var(--surface-2); border: 1px solid var(--card-border); border-left: 3px solid var(--amber); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: var(--text); margin-bottom: 14px; }
+  @media (max-width: 760px) {
+    .sp-body { grid-template-columns: 1fr; gap: 16px; }
+    .sp-nav { flex-direction: row; overflow-x: auto; position: static; padding-bottom: 4px; }
+    .sp-title { font-size: 25px; }
+    .sp-wrap { padding: 20px 14px 90px; }
+  }
+
   @media print {
-    header, .tabs, .btn, #progressWidget, #authOverlay { display: none !important; }
+    header, .tabs, .btn, #progressWidget, #authOverlay, .acct-btn, .acct-menu, .sp { display: none !important; }
     .tab-panel { display: block !important; }
     body { background: #fff; }
   }
@@ -840,6 +908,136 @@ window.fbAsyncInit = function() {
   </div>
 </div>
 
+<!-- ACCOUNT MENU (bottom-left corner) -->
+<button type="button" class="acct-btn avatar" id="acctBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="acctMenu" aria-label="Account menu" title="Account"></button>
+<div class="acct-menu" id="acctMenu" role="menu" aria-label="Account">
+  <div class="acct-who">
+    <div class="avatar av-sm" id="acctMenuAvatar"></div>
+    <div class="acct-who-text"><div class="nm" id="acctMenuName"></div><div class="un" id="acctMenuUser"></div></div>
+  </div>
+  <button type="button" class="acct-item" role="menuitem" data-open="info">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+    <span>Profile</span>
+  </button>
+  <button type="button" class="acct-item" role="menuitem" data-open="account">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+    <span>Settings</span>
+  </button>
+</div>
+
+<!-- ACCOUNT SETTINGS PAGE -->
+<div class="sp" id="settingsPage" role="region" aria-label="Account settings">
+  <div class="sp-top">
+    <button type="button" class="btn btn-outline" id="spBack">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      BACK TO JOURNAL
+    </button>
+  </div>
+  <div class="sp-wrap">
+    <div class="sp-crumb">Settings</div>
+    <h1 class="sp-title" id="spTitle" tabindex="-1">Account Settings</h1>
+    <p class="sp-sub">Manage your profile, username and security in one place.</p>
+
+    <div class="sp-body">
+      <nav class="sp-nav" id="spNav" role="tablist" aria-orientation="vertical" aria-label="Settings sections">
+        <button type="button" role="tab" data-sp="info" aria-selected="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+          <span>Personal info</span>
+        </button>
+        <button type="button" role="tab" data-sp="account" aria-selected="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+          <span>Account</span>
+        </button>
+        <button type="button" role="tab" data-sp="security" aria-selected="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span>Security</span>
+        </button>
+        <button type="button" role="tab" data-sp="plan" aria-selected="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+          <span>Plan</span>
+        </button>
+      </nav>
+
+      <div class="sp-main">
+
+        <!-- PERSONAL INFO -->
+        <section class="sp-panel active" data-sp-panel="info" role="tabpanel">
+          <div class="card">
+            <div class="sh"><div class="title">Personal information</div><div class="sub">Edit your personal information</div></div>
+
+            <div class="sp-photo">
+              <div class="avatar av-lg" id="spAvatar"></div>
+              <div class="sp-photo-actions">
+                <button type="button" class="btn btn-save" id="spUpload">UPLOAD IMAGE</button>
+                <button type="button" class="sp-icon-btn" id="spRemovePhoto" aria-label="Remove photo" title="Remove photo" style="display:none;">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+                </button>
+              </div>
+              <div class="sp-hint">PNG, JPG or WEBP. Your photo is cropped to a square and resized automatically.</div>
+              <input type="file" id="spFile" accept="image/png,image/jpeg,image/webp" style="display:none;" />
+            </div>
+
+            <div class="grid grid-2">
+              <div class="field"><label for="spFirst">First name</label><input id="spFirst" maxlength="60" autocomplete="given-name" /></div>
+              <div class="field"><label for="spLast">Last name</label><input id="spLast" maxlength="60" autocomplete="family-name" /></div>
+            </div>
+            <div class="grid grid-2">
+              <div class="field"><label for="spEmail">Email <span class="sp-tag" id="spEmailTag" style="display:none;"></span></label><input id="spEmail" class="sp-readonly" readonly tabindex="-1" aria-describedby="spEmailHint" /></div>
+              <div class="field"><label for="spCountry">Country</label><select id="spCountry" autocomplete="country-name"></select></div>
+            </div>
+            <div class="sp-hint" id="spEmailHint" style="margin:-4px 0 12px;">Your email is used for login emails and password resets, so it can't be changed here.</div>
+            <div class="grid grid-2">
+              <div class="field"><label for="spPhone">Phone number (optional)</label><input id="spPhone" type="tel" maxlength="30" placeholder="+92 300 0000000" autocomplete="tel" /></div>
+              <div class="field"><label for="spTz">Time zone</label><select id="spTz"></select></div>
+            </div>
+            <div class="sp-hint" id="spTzHint" style="display:none;">Detected from this device. Save to keep it.</div>
+
+            <div class="sp-actions">
+              <button type="button" class="btn btn-save" id="spInfoSave">SAVE CHANGES</button>
+              <span class="sp-msg" id="spInfoMsg" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACCOUNT -->
+        <section class="sp-panel" data-sp-panel="account" role="tabpanel">
+          <div class="card">
+            <div class="sh"><div class="title">Username</div><div class="sub">This is the name you use to log in</div></div>
+            <div class="sp-lock" id="spUserLock" style="display:none;"></div>
+            <div class="field"><label for="spCurUser">Current username</label><input id="spCurUser" class="sp-readonly" readonly tabindex="-1" /></div>
+            <div class="grid grid-2">
+              <div class="field"><label for="spNewUser">New username</label><input id="spNewUser" maxlength="30" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="3-30 letters, numbers or _" /></div>
+              <div class="field" id="spPassField"><label for="spUserPass">Current password</label><input id="spUserPass" type="password" autocomplete="current-password" /></div>
+            </div>
+            <div class="sp-hint" id="spUserRule">You can change your username once every 30 days. Your old username stays reserved, so nobody else can take it.</div>
+            <div class="sp-actions">
+              <button type="button" class="btn btn-save" id="spUserSave">CHANGE USERNAME</button>
+              <span class="sp-msg" id="spUserMsg" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECURITY (next step) -->
+        <section class="sp-panel" data-sp-panel="security" role="tabpanel">
+          <div class="card">
+            <div class="sh"><div class="title">Security</div><div class="sub">Password and two-factor authentication</div></div>
+            <div class="sp-soon">Password change and two-factor authentication with an authenticator app are coming soon.</div>
+          </div>
+        </section>
+
+        <!-- PLAN (next step) -->
+        <section class="sp-panel" data-sp-panel="plan" role="tabpanel">
+          <div class="card">
+            <div class="sh"><div class="title">Plan</div><div class="sub">Your subscription</div></div>
+            <div class="sp-soon">Plan details and billing will appear here soon. For now, use the Upgrade button at the top of the journal.</div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const TRADE_FIELDS = ["date","day","pair","lotSize","direction","session","structure","bias","strategy",
   "openTime","closeTime","holdTime","entryPrice","tpPrice","slPrice","targetPips","slPips","rrRatio",
@@ -1198,6 +1396,7 @@ function logout(){
   localStorage.removeItem("axiom_username");
   authToken = null;
   currentUser = null;
+  try{ resetAcctUI(); }catch(e){}
   $("authOverlay").style.display = "flex";
   $("authUser").value=""; $("authPass").value=""; $("authError").textContent="";
 }
@@ -2132,6 +2331,7 @@ async function bootApp(){
   initDefaults();
   await bootAccountData();
   refreshSubscriptionStatus();
+  loadProfileInfo();
 }
 
 /* ══════════════════ SUBSCRIPTION / PLAN ══════════════════ */
@@ -2366,11 +2566,12 @@ $("startCheckoutBtn").addEventListener("click", ()=>{
     alert("Please log in before upgrading.");
     return;
   }
-  // The username travels through checkout[custom][...] and comes back to our
+  // The username and user id travel through checkout[custom][...] and come back to our
   // webhook in meta.custom_data, so the backend knows which account paid.
   const url = LEMON_CHECKOUT_URL
     + (LEMON_CHECKOUT_URL.indexOf("?") === -1 ? "?" : "&")
-    + "checkout[custom][axiom_username]=" + encodeURIComponent(currentUser);
+    + "checkout[custom][axiom_username]=" + encodeURIComponent(currentUser)
+    + (userIdFromToken() ? "&checkout[custom][axiom_user_id]=" + userIdFromToken() : "");
 
   try {
     if(window.LemonSqueezy && window.LemonSqueezy.Url && typeof window.LemonSqueezy.Url.Open === "function"){
@@ -2384,6 +2585,326 @@ $("startCheckoutBtn").addEventListener("click", ()=>{
   // hosted checkout page in a new tab instead. Payment still works.
   window.open(url, "_blank", "noopener");
 });
+
+/* ══════════════════ ACCOUNT MENU + SETTINGS PAGE ══════════════════ */
+let profileData = null;     // last profile answer from /api/profile
+let spPendingAvatar;        // undefined = photo unchanged, null = remove it, string = new photo (data URL)
+let spDirty = false;        // person has typed in the Personal info form
+let spSaving = false;
+let spBuilt = false;
+
+const COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo (Brazzaville)","Congo (Kinshasa)","Costa Rica","Côte d'Ivoire","Croatia","Cuba","Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hong Kong","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macau","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Puerto Rico","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","São Tomé and Príncipe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Türkiye","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+const TZ_FALLBACK = ["UTC","Africa/Cairo","Africa/Johannesburg","Africa/Lagos","America/Chicago","America/Los_Angeles","America/New_York","America/Sao_Paulo","America/Toronto","Asia/Dhaka","Asia/Dubai","Asia/Hong_Kong","Asia/Karachi","Asia/Kolkata","Asia/Kuala_Lumpur","Asia/Riyadh","Asia/Singapore","Asia/Tokyo","Australia/Sydney","Europe/Berlin","Europe/Istanbul","Europe/London","Europe/Moscow","Europe/Paris","Pacific/Auckland"];
+
+function acctDisplayName(){
+  const n = (((profileData && profileData.firstName) || "") + " " + ((profileData && profileData.lastName) || "")).trim();
+  return n || currentUser || "";
+}
+function renderAvatarInto(el, avatar, label){
+  if(!el) return;
+  el.textContent = "";
+  if(avatar && /^data:image\/(png|jpeg|webp);base64,/.test(avatar)){
+    const img = document.createElement("img");
+    img.src = avatar; img.alt = "";
+    el.appendChild(img);
+  } else {
+    el.textContent = ((label || "?").trim().charAt(0) || "?").toUpperCase();
+  }
+}
+function refreshAcctUI(){
+  const btn = $("acctBtn");
+  if(!currentUser){ btn.classList.remove("show"); return; }
+  const photo = profileData ? profileData.avatar : null;
+  const initialFrom = (profileData && profileData.firstName) || currentUser;
+  renderAvatarInto(btn, photo, initialFrom);
+  renderAvatarInto($("acctMenuAvatar"), photo, initialFrom);
+  $("acctMenuName").textContent = acctDisplayName();
+  $("acctMenuUser").textContent = "@" + currentUser;
+  btn.classList.add("show");
+  if(spIsOpen() && spPendingAvatar === undefined) renderAvatarInto($("spAvatar"), photo, initialFrom);
+}
+
+/* ── menu ── */
+function acctMenuOpen(){ return $("acctMenu").classList.contains("open"); }
+function openAcctMenu(){ $("acctMenu").classList.add("open"); $("acctBtn").setAttribute("aria-expanded","true"); }
+function closeAcctMenu(){ $("acctMenu").classList.remove("open"); $("acctBtn").setAttribute("aria-expanded","false"); }
+$("acctBtn").addEventListener("click", ()=>{ acctMenuOpen() ? closeAcctMenu() : openAcctMenu(); });
+document.addEventListener("click", e=>{
+  if(acctMenuOpen() && !e.target.closest("#acctMenu") && !e.target.closest("#acctBtn")) closeAcctMenu();
+});
+document.querySelectorAll("#acctMenu .acct-item").forEach(b=>{
+  b.addEventListener("click", ()=> openSettings(b.getAttribute("data-open")));
+});
+
+/* ── settings page open / close ── */
+function spIsOpen(){ return $("settingsPage").classList.contains("open"); }
+function selectSpTab(name){
+  document.querySelectorAll("#spNav button").forEach(b=> b.setAttribute("aria-selected", b.getAttribute("data-sp") === name ? "true" : "false"));
+  document.querySelectorAll(".sp-panel").forEach(p=> p.classList.toggle("active", p.getAttribute("data-sp-panel") === name));
+}
+function openSettings(tab){
+  closeAcctMenu();
+  if(!currentUser) return;
+  buildSettingsSelects();
+  $("settingsPage").classList.add("open");
+  document.body.style.overflow = "hidden";
+  selectSpTab(tab || "info");
+  spDirty = false;
+  fillSettingsForm();
+  $("settingsPage").scrollTop = 0;
+  $("spTitle").focus();
+  if(!profileData) loadProfileInfo();
+}
+function closeSettings(restoreFocus){
+  $("settingsPage").classList.remove("open");
+  document.body.style.overflow = "";
+  if(restoreFocus && $("acctBtn").classList.contains("show")) $("acctBtn").focus();
+}
+$("spBack").addEventListener("click", ()=> closeSettings(true));
+document.querySelectorAll("#spNav button").forEach(b=> b.addEventListener("click", ()=> selectSpTab(b.getAttribute("data-sp"))));
+document.addEventListener("keydown", e=>{
+  if(e.key !== "Escape") return;
+  if($("upgradeModal").style.display === "flex") return;
+  if(acctMenuOpen()){ closeAcctMenu(); $("acctBtn").focus(); return; }
+  if(spIsOpen()) closeSettings(true);
+});
+
+/* ── selects (built once) ── */
+function tzOffsetLabel(tz){
+  try{
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" }).formatToParts(new Date());
+    const p = parts.find(x => x.type === "timeZoneName");
+    return tz.replace(/_/g, " ") + (p ? " (" + p.value + ")" : "");
+  }catch(e){ return tz; }
+}
+function timeZoneList(){
+  try{ if(typeof Intl.supportedValuesOf === "function"){ const l = Intl.supportedValuesOf("timeZone"); if(l && l.length) return l.slice(); } }catch(e){}
+  return TZ_FALLBACK.slice();
+}
+function addOption(sel, value, text){ const o = document.createElement("option"); o.value = value; o.textContent = text; sel.appendChild(o); return o; }
+function buildSettingsSelects(){
+  if(spBuilt) return;
+  const c = $("spCountry");
+  addOption(c, "", "Select country");
+  COUNTRIES.forEach(n => addOption(c, n, n));
+  const t = $("spTz");
+  addOption(t, "", "Select time zone");
+  const groups = {};
+  timeZoneList().forEach(z => { const g = z.indexOf("/") > 0 ? z.split("/")[0] : "Other"; (groups[g] = groups[g] || []).push(z); });
+  Object.keys(groups).sort().forEach(g => {
+    const og = document.createElement("optgroup"); og.label = g;
+    groups[g].forEach(z => addOption(og, z, tzOffsetLabel(z)));
+    t.appendChild(og);
+  });
+  spBuilt = true;
+}
+function setSelectValue(sel, value){
+  if(value && !Array.prototype.some.call(sel.options, o => o.value === value)) addOption(sel, value, value);   /* keep a saved value even if it is not in the list */
+  sel.value = value || "";
+}
+function deviceTimeZone(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; }catch(e){ return ""; } }
+
+/* ── fill forms from the loaded profile ── */
+function fillSettingsForm(){
+  const p = profileData;
+  const photo = p ? p.avatar : null;
+  const initialFrom = (p && p.firstName) || currentUser || "?";
+  if(!spDirty){
+    $("spFirst").value = p ? p.firstName : "";
+    $("spLast").value = p ? p.lastName : "";
+    $("spPhone").value = p ? p.phone : "";
+    setSelectValue($("spCountry"), p ? p.country : "");
+    const savedTz = p ? p.timezone : "";
+    const tz = savedTz || (p ? deviceTimeZone() : "");
+    setSelectValue($("spTz"), tz);
+    $("spTzHint").style.display = (p && !savedTz && tz) ? "block" : "none";
+    spPendingAvatar = undefined;
+    renderAvatarInto($("spAvatar"), photo, initialFrom);
+    $("spRemovePhoto").style.display = photo ? "inline-flex" : "none";
+    $("spInfoMsg").textContent = ""; $("spInfoMsg").className = "sp-msg";
+  }
+  $("spEmail").value = p ? (p.email || "") : "";
+  const tag = $("spEmailTag");
+  if(p && p.email){ tag.style.display = "inline-block"; tag.textContent = p.emailVerified ? "VERIFIED" : "NOT VERIFIED"; tag.className = "sp-tag " + (p.emailVerified ? "ok" : "warn"); }
+  else { tag.style.display = "none"; }
+  $("spInfoSave").disabled = !p;
+
+  /* username panel */
+  $("spCurUser").value = currentUser || "";
+  const hasPw = !p || p.hasPassword;                       /* until the profile loads, assume a password is needed */
+  $("spPassField").style.display = hasPw ? "block" : "none";
+  const days = p ? Number(p.usernameChangeDaysLeft || 0) : 0;
+  const lock = $("spUserLock");
+  const locked = days > 0;
+  lock.style.display = locked ? "block" : "none";
+  lock.textContent = locked ? "You can change your username again in " + days + " day" + (days === 1 ? "" : "s") + "." : "";
+  $("spNewUser").disabled = locked; $("spUserPass").disabled = locked; $("spUserSave").disabled = locked || !p;
+  const cool = p ? p.usernameCooldownDays : 30;
+  $("spUserRule").textContent = (p && p.role === "admin")
+    ? "Admin accounts have no waiting period. Your old username stays reserved, so nobody else can take it."
+    : "You can change your username once every " + cool + " days. Your old username stays reserved, so nobody else can take it.";
+}
+["spFirst","spLast","spPhone","spCountry","spTz"].forEach(id=>{
+  $(id).addEventListener("input", ()=>{ spDirty = true; });
+  $(id).addEventListener("change", ()=>{ spDirty = true; });
+});
+
+function spMessage(id, text, ok){ const el = $(id); el.textContent = text || ""; el.className = "sp-msg" + (text ? (ok ? " ok" : " err") : ""); }
+
+/* ── profile photo: crop to square, shrink to 256px, store as a small JPEG ── */
+function fileToAvatarDataUrl(file){
+  return new Promise((resolve, reject)=>{
+    if(!/^image\/(png|jpeg|webp)$/.test(file.type)){ reject(new Error("Please choose a PNG, JPG or WEBP image.")); return; }
+    if(file.size > 10 * 1024 * 1024){ reject(new Error("That image is too large. Please choose one under 10 MB.")); return; }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      try{
+        const S = 256, c = document.createElement("canvas");
+        c.width = S; c.height = S;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, S, S);   /* transparent PNGs get a white background */
+        const m = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+        resolve(c.toDataURL("image/jpeg", 0.85));
+      }catch(e){ reject(new Error("Could not read that image. Please try another one.")); }
+      finally{ URL.revokeObjectURL(url); }
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error("Could not read that image. Please try another one.")); };
+    img.src = url;
+  });
+}
+$("spUpload").addEventListener("click", ()=> $("spFile").click());
+$("spFile").addEventListener("change", async ()=>{
+  const f = $("spFile").files && $("spFile").files[0];
+  $("spFile").value = "";
+  if(!f) return;
+  try{
+    spPendingAvatar = await fileToAvatarDataUrl(f);
+    spDirty = true;
+    renderAvatarInto($("spAvatar"), spPendingAvatar, (profileData && profileData.firstName) || currentUser);
+    $("spRemovePhoto").style.display = "inline-flex";
+    spMessage("spInfoMsg", "Photo ready. Select Save changes to keep it.", true);
+  }catch(e){ spMessage("spInfoMsg", e.message, false); }
+});
+$("spRemovePhoto").addEventListener("click", ()=>{
+  spPendingAvatar = null; spDirty = true;
+  renderAvatarInto($("spAvatar"), null, (profileData && profileData.firstName) || currentUser);
+  $("spRemovePhoto").style.display = "none";
+  spMessage("spInfoMsg", "Photo removed. Select Save changes to confirm.", true);
+});
+
+/* ── save personal info ── */
+$("spInfoSave").addEventListener("click", async ()=>{
+  if(spSaving) return;
+  const nameRe = /^[\p{L}\p{M} .'-]{1,60}$/u, phoneRe = /^\+?[0-9 ()-]{6,30}$/;
+  const first = $("spFirst").value.trim(), last = $("spLast").value.trim(), phone = $("spPhone").value.trim();
+  if(first && !nameRe.test(first)){ spMessage("spInfoMsg", "First name can only contain letters, spaces, . ' and -", false); return; }
+  if(last && !nameRe.test(last)){ spMessage("spInfoMsg", "Last name can only contain letters, spaces, . ' and -", false); return; }
+  if(phone && !phoneRe.test(phone)){ spMessage("spInfoMsg", "Phone number can only contain digits, spaces, + ( ) and -", false); return; }
+
+  const payload = { firstName: first, lastName: last, country: $("spCountry").value, phone: phone, timezone: $("spTz").value };
+  if(spPendingAvatar !== undefined) payload.avatar = spPendingAvatar;
+
+  spSaving = true;
+  const btn = $("spInfoSave"), label = btn.textContent;
+  btn.textContent = "SAVING..."; btn.disabled = true; spMessage("spInfoMsg", "", true);
+  try{
+    profileData = await apiFetch("/profile", { method: "PUT", body: JSON.stringify(payload) });
+    spPendingAvatar = undefined; spDirty = false;
+    fillSettingsForm();
+    refreshAcctUI();
+    spMessage("spInfoMsg", "Changes saved.", true);
+  }catch(e){
+    spMessage("spInfoMsg", e.message || "Could not save. Please try again.", false);
+  }finally{
+    spSaving = false; btn.textContent = label; btn.disabled = !profileData;
+  }
+});
+
+/* ── change username ── */
+function migrateLocalKeysForRename(oldName, newName){
+  /* drafts and the "last used account" pointer are stored per username in this browser — carry them over */
+  try{
+    const ptrOld = "axiom_current_account_" + oldName, ptrNew = "axiom_current_account_" + newName;
+    const ptr = localStorage.getItem(ptrOld);
+    if(ptr !== null){ localStorage.setItem(ptrNew, ptr); localStorage.removeItem(ptrOld); }
+    (typeof accountsCache !== "undefined" && accountsCache ? accountsCache : []).forEach(a=>{
+      const oldKey = "axiom_draft_" + oldName + "_" + a.name, newKey = "axiom_draft_" + newName + "_" + a.name;
+      const d = localStorage.getItem(oldKey);
+      if(d !== null){ localStorage.setItem(newKey, d); localStorage.removeItem(oldKey); }
+    });
+  }catch(e){}
+}
+function applyUsername(newName){
+  currentUser = newName;
+  localStorage.setItem("axiom_username", newName);
+  $("userChip").innerHTML = "Trader: <b>" + escapeHtml(newName) + "</b>";
+}
+$("spUserSave").addEventListener("click", async ()=>{
+  const nu = $("spNewUser").value.trim();
+  const pw = $("spUserPass").value;
+  if(!/^[a-zA-Z0-9_]{3,30}$/.test(nu)){ spMessage("spUserMsg", "Username must be 3-30 characters: letters, numbers, underscore only.", false); return; }
+  if(nu === currentUser){ spMessage("spUserMsg", "That is already your username.", false); return; }
+  if(profileData && profileData.hasPassword && !pw){ spMessage("spUserMsg", "Enter your current password.", false); return; }
+  const isAdmin = profileData && profileData.role === "admin";
+  const warn = isAdmin ? "" : "\n\nYou will not be able to change it again for 30 days.";
+  if(!window.confirm("Change your username to \"" + nu + "\"?" + warn)) return;
+
+  const btn = $("spUserSave"), label = btn.textContent;
+  btn.textContent = "CHANGING..."; btn.disabled = true; spMessage("spUserMsg", "", true);
+  try{
+    const r = await apiFetch("/profile/username", { method: "PUT", body: JSON.stringify({ username: nu, password: pw }) });
+    const oldName = currentUser;
+    migrateLocalKeysForRename(oldName, r.username);
+    authToken = r.token;
+    localStorage.setItem("axiom_token", r.token);
+    applyUsername(r.username);
+    $("spNewUser").value = ""; $("spUserPass").value = "";
+    try{ profileData = await apiFetch("/profile"); }catch(e){ if(profileData) profileData.username = r.username; }
+    refreshAcctUI();
+    fillSettingsForm();
+    spMessage("spUserMsg", "Username changed to " + r.username + ".", true);
+  }catch(e){
+    spMessage("spUserMsg", e.message || "Could not change username. Please try again.", false);
+  }finally{
+    btn.textContent = label;
+    btn.disabled = !profileData || Number(profileData.usernameChangeDaysLeft || 0) > 0;
+  }
+});
+
+/* ── load profile after login ── */
+async function loadProfileInfo(){
+  refreshAcctUI();
+  try{
+    const p = await apiFetch("/profile");
+    profileData = p;
+    if(p.username && p.username !== currentUser) applyUsername(p.username);   /* renamed on another device */
+    refreshAcctUI();
+    if(spIsOpen()) fillSettingsForm();
+  }catch(e){
+    console.error("Could not load profile:", e.message);
+  }
+}
+function resetAcctUI(){
+  closeAcctMenu();
+  closeSettings(false);
+  profileData = null; spPendingAvatar = undefined; spDirty = false;
+  $("acctBtn").classList.remove("show");
+}
+
+/* The checkout carries the user id too, so a payment still finds the right account after a username change.
+   The id is read from the login token (it is not a secret). */
+function userIdFromToken(){
+  try{
+    const part = (authToken || "").split(".")[1];
+    if(!part) return null;
+    const b64 = part.replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(atob(b64 + "===".slice((b64.length + 3) % 4)).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+    const id = parseInt(JSON.parse(json).userId, 10);
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }catch(e){ return null; }
+}
 
 (async function initAuthCheck(){
   if(pendingResetToken) return;   /* opened from a reset email — stay on the reset screen */
