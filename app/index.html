@@ -22,6 +22,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" integrity="sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k" crossorigin="anonymous" defer></script>
 <style>
   :root {
     --red: #CC1A1A;
@@ -410,6 +411,17 @@
   .sp-tag.warn { color: var(--amber); border-color: rgba(161,92,0,0.4); }
   .sp-soon { padding: 6px 0 2px; font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 56ch; }
   .sp-lock { background: var(--surface-2); border: 1px solid var(--card-border); border-left: 3px solid var(--amber); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: var(--text); margin-bottom: 14px; }
+  .sp-qrbox { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin: 10px 0 16px; }
+  .sp-qr { width: 196px; height: 196px; border-radius: 8px; overflow: hidden; background: #fff; border: 1px solid var(--card-border); flex-shrink: 0; }
+  .sp-qr svg { display: block; width: 100%; height: 100%; }
+  .sp-secret { display: block; margin: 6px 0 10px; padding: 10px 12px; max-width: 340px; background: var(--input-bg); border: 1px solid var(var(--input-border)); border-radius: 4px; font: 700 13px 'JetBrains Mono', monospace; letter-spacing: 1.5px; word-break: break-all; color: var(--text); user-select: all; }
+  .sp-codes { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; max-width: 420px; margin: 4px 0; }
+  .sp-codes code { padding: 10px 12px; text-align: center; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 4px; font: 700 14px 'JetBrains Mono', monospace; letter-spacing: 1.5px; color: var(--text); user-select: all; }
+  .sp-statusrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; line-height: 1.6; color: var(--text); margin-bottom: 4px; }
+  .sp-statusrow .sp-tag { margin-left: 0; }
+  .sp-steps p { margin: 8px 0; font-size: 13px; line-height: 1.6; color: var(--muted); max-width: 62ch; }
+  .sp-steps b { color: var(--text); }
+  .sp-card-gap { margin-top: 12px; }
   @media (max-width: 760px) {
     .sp-body { grid-template-columns: 1fr; gap: 16px; }
     .sp-nav { flex-direction: row; overflow-x: auto; position: static; padding-bottom: 4px; }
@@ -499,6 +511,16 @@ window.fbAsyncInit = function() {
         <button type="button" class="auth-link" id="resetNewLink">Request a new link</button>
         <button type="button" class="auth-link" id="resetBack">&larr; Back to log in</button>
       </div>
+    </div>
+
+    <!-- TWO-FACTOR VIEW (shown after a correct password when 2FA is on) -->
+    <div id="authTwoFaView" style="display:none;">
+      <div class="auth-view-title">Two-factor authentication</div>
+      <p class="auth-view-text">Open your authenticator app and enter the 6-digit code for Axiom. Lost your phone? Enter one of your backup codes instead.</p>
+      <div class="field"><label>Code</label><input id="twoFaCode" type="text" placeholder="123456" maxlength="14" autocomplete="one-time-code" autocapitalize="off" spellcheck="false"/></div>
+      <button type="button" class="auth-btn" id="twoFaSubmit">VERIFY AND LOG IN</button>
+      <div class="auth-error" id="twoFaError"></div>
+      <div style="margin-top:14px;"><button type="button" class="auth-link" id="twoFaBack">&larr; Back to log in</button></div>
     </div>
 
     <div class="auth-note">Your trades are securely saved to the Axiom server.<br/>An internet connection is required.</div>
@@ -1017,11 +1039,97 @@ window.fbAsyncInit = function() {
           </div>
         </section>
 
-        <!-- SECURITY (next step) -->
+        <!-- SECURITY -->
         <section class="sp-panel" data-sp-panel="security" role="tabpanel">
           <div class="card">
-            <div class="sh"><div class="title">Security</div><div class="sub">Password and two-factor authentication</div></div>
-            <div class="sp-soon">Password change and two-factor authentication with an authenticator app are coming soon.</div>
+            <div class="sh"><div class="title">Password</div><div class="sub">Change the password you use to log in</div></div>
+            <div class="sp-soon" id="spPwNone" style="display:none;">Your account signs in with Google or Facebook, so it has no password to change.</div>
+            <div id="spPwForm">
+              <div class="field"><label for="spPwCur">Current password</label><input id="spPwCur" type="password" autocomplete="current-password" /></div>
+              <div class="grid grid-2">
+                <div class="field"><label for="spPwNew">New password</label><input id="spPwNew" type="password" autocomplete="new-password" /></div>
+                <div class="field"><label for="spPwNew2">Confirm new password</label><input id="spPwNew2" type="password" autocomplete="new-password" /></div>
+              </div>
+              <div class="sp-hint">6-72 characters. You stay logged in on this device; every other device is logged out.</div>
+              <div class="sp-actions">
+                <button type="button" class="btn btn-save" id="spPwSave">CHANGE PASSWORD</button>
+                <span class="sp-msg" id="spPwMsg" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="sh"><div class="title">Two-factor authentication</div><div class="sub">Ask for a code from your phone when you log in with your password</div></div>
+
+            <div class="sp-soon" id="spTfaLoading">Loading...</div>
+            <div class="sp-soon" id="spTfaNoPw" style="display:none;">Two-factor authentication protects password logins. Your account signs in with Google or Facebook, so it is protected by that sign-in instead.</div>
+
+            <!-- off -->
+            <div id="spTfaOff" style="display:none;">
+              <div class="sp-soon">Even if someone learns your password, they cannot log in without the 6-digit code from your phone. Use an authenticator app such as Google Authenticator, Microsoft Authenticator or Authy.</div>
+              <div class="field" style="max-width:340px; margin-top:12px;"><label for="spTfaPw">Current password</label><input id="spTfaPw" type="password" autocomplete="current-password" /></div>
+              <div class="sp-actions">
+                <button type="button" class="btn btn-save" id="spTfaStart">SET UP 2FA</button>
+                <span class="sp-msg" id="spTfaOffMsg" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <!-- setup in progress -->
+            <div id="spTfaSetup" style="display:none;">
+              <div class="sp-steps">
+                <p><b>1.</b> Install an authenticator app on your phone, then open it and add a new account.</p>
+                <p><b>2.</b> Scan this QR code. If you cannot scan, type the key in by hand.</p>
+              </div>
+              <div class="sp-qrbox">
+                <div class="sp-qr" id="spQr" role="img" aria-label="QR code for your authenticator app"></div>
+                <div>
+                  <div class="sp-hint" style="margin-top:0;">Key for manual entry:</div>
+                  <code class="sp-secret" id="spSecret"></code>
+                  <button type="button" class="btn btn-outline" id="spCopySecret">COPY KEY</button>
+                </div>
+              </div>
+              <div class="sp-steps"><p><b>3.</b> Enter the 6-digit code the app shows to finish.</p></div>
+              <div class="field" style="max-width:240px;"><label for="spTfaCode">6-digit code</label><input id="spTfaCode" inputmode="numeric" maxlength="7" autocomplete="one-time-code" placeholder="123 456" /></div>
+              <div class="sp-actions">
+                <button type="button" class="btn btn-save" id="spTfaVerify">TURN ON 2FA</button>
+                <button type="button" class="btn btn-outline" id="spTfaCancel">CANCEL</button>
+                <span class="sp-msg" id="spTfaSetupMsg" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <!-- backup codes (shown once) -->
+            <div id="spTfaCodes" style="display:none;">
+              <div class="sp-lock">Save these backup codes now. Each one works once if you lose your phone, and you will not be able to see them again.</div>
+              <div class="sp-codes" id="spCodesGrid"></div>
+              <div class="sp-actions">
+                <button type="button" class="btn btn-outline" id="spCodesCopy">COPY</button>
+                <button type="button" class="btn btn-outline" id="spCodesDownload">DOWNLOAD</button>
+                <button type="button" class="btn btn-save" id="spCodesDone">I HAVE SAVED MY CODES</button>
+                <span class="sp-msg" id="spCodesMsg" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <!-- on -->
+            <div id="spTfaOn" style="display:none;">
+              <div class="sp-statusrow"><span class="sp-tag ok">ON</span><span>Two-factor authentication is on.</span><span id="spCodesLeft" style="color:var(--muted);"></span></div>
+              <div class="sp-actions">
+                <button type="button" class="btn btn-outline" id="spTfaRegen">NEW BACKUP CODES</button>
+                <button type="button" class="btn btn-outline" id="spTfaOffBtn" style="border-color:var(--red-text); color:var(--red-text);">TURN OFF 2FA</button>
+                <span class="sp-msg" id="spTfaOnMsg" role="status" aria-live="polite"></span>
+              </div>
+              <div id="spTfaAction" style="display:none; margin-top:18px; padding-top:16px; border-top:1px solid var(--card-border);">
+                <div class="sp-hint" id="spTfaActionHint" style="margin-top:0; margin-bottom:10px;"></div>
+                <div class="grid grid-2">
+                  <div class="field"><label for="spTfaActPw">Current password</label><input id="spTfaActPw" type="password" autocomplete="current-password" /></div>
+                  <div class="field"><label for="spTfaActCode">Authenticator or backup code</label><input id="spTfaActCode" maxlength="14" autocomplete="one-time-code" autocapitalize="off" spellcheck="false" /></div>
+                </div>
+                <div class="sp-actions" style="margin-top:4px;">
+                  <button type="button" class="btn btn-save" id="spTfaActGo">CONFIRM</button>
+                  <button type="button" class="btn btn-outline" id="spTfaActCancel">CANCEL</button>
+                  <span class="sp-msg" id="spTfaActMsg" role="status" aria-live="polite"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1181,6 +1289,14 @@ $("authSubmit").addEventListener("click", async ()=>{
       btn.textContent = originalLabel;
       return;
     }
+    if(body.requires2FA && body.twoFactorToken){           /* password was right, 2FA is on: ask for the code */
+      pending2faToken = body.twoFactorToken;
+      btn.textContent = originalLabel;
+      $("authPass").value = "";
+      showAuthView("twofa");
+      $("twoFaCode").focus();
+      return;
+    }
     if(authMode === "signup" && body.user && !body.user.emailVerified){
       pendingVerifyNotice = true;
     }
@@ -1227,11 +1343,12 @@ let pendingResetToken = null;
   }catch(e){}
 })();
 
-function showAuthView(view){   /* "main" | "forgot" | "reset" */
+function showAuthView(view){   /* "main" | "forgot" | "reset" | "twofa" */
   $("authMainView").style.display   = view === "main"   ? "block" : "none";
   $("authForgotView").style.display = view === "forgot" ? "block" : "none";
   $("authResetView").style.display  = view === "reset"  ? "block" : "none";
-  ["forgotError","forgotSuccess","resetError"].forEach(id => { $(id).textContent = ""; });
+  $("authTwoFaView").style.display  = view === "twofa"  ? "block" : "none";
+  ["forgotError","forgotSuccess","resetError","twoFaError"].forEach(id => { $(id).textContent = ""; });
 }
 
 $("forgotLink").addEventListener("click", ()=>{
@@ -2641,6 +2758,7 @@ function spIsOpen(){ return $("settingsPage").classList.contains("open"); }
 function selectSpTab(name){
   document.querySelectorAll("#spNav button").forEach(b=> b.setAttribute("aria-selected", b.getAttribute("data-sp") === name ? "true" : "false"));
   document.querySelectorAll(".sp-panel").forEach(p=> p.classList.toggle("active", p.getAttribute("data-sp-panel") === name));
+  if(name === "security") loadSecurityStatus();
 }
 function openSettings(tab){
   closeAcctMenu();
@@ -2890,6 +3008,7 @@ function resetAcctUI(){
   closeAcctMenu();
   closeSettings(false);
   profileData = null; spPendingAvatar = undefined; spDirty = false;
+  try{ resetSecurityUI(); }catch(e){}
   $("acctBtn").classList.remove("show");
 }
 
@@ -2905,6 +3024,276 @@ function userIdFromToken(){
     return Number.isInteger(id) && id > 0 ? id : null;
   }catch(e){ return null; }
 }
+
+/* ══════════════════ LOGIN: second step when two-factor authentication is on ══════════════════ */
+let pending2faToken = null;
+let twoFaBusy = false;
+async function submitTwoFa(){
+  if(twoFaBusy || !pending2faToken) return;
+  const code = $("twoFaCode").value.trim();
+  const err = $("twoFaError");
+  if(!code){ err.textContent = "Enter the code from your authenticator app."; return; }
+  twoFaBusy = true;
+  const btn = $("twoFaSubmit"), label = btn.textContent;
+  btn.textContent = "PLEASE WAIT..."; err.textContent = "";
+  try{
+    const res = await fetchWithWakeRetry(API_BASE + "/auth/login/2fa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ twoFactorToken: pending2faToken, code: code }),
+    }, "twoFaError");
+    const body = await res.json().catch(()=>({}));
+    if(!res.ok){
+      if(body.code === "login_expired"){          /* the 5-minute window ended: back to the password step */
+        pending2faToken = null; $("twoFaCode").value = "";
+        showAuthView("main");
+        $("authError").textContent = body.error || "Your login session expired. Please log in again.";
+      } else {
+        err.textContent = body.error || "Something went wrong. Please try again.";
+      }
+      return;
+    }
+    pending2faToken = null; $("twoFaCode").value = "";
+    showAuthView("main");
+    loginAs(body.user.username, body.token);
+    if(body.usedBackupCode){
+      setTimeout(()=>alert("You logged in with a backup code. Backup codes left: " + body.backupCodesRemaining + ". You can make new ones in Settings > Security."), 400);
+    }
+  }catch(e){
+    err.textContent = "Could not reach the server. Please check your internet connection and try again in a minute.";
+  }finally{
+    twoFaBusy = false; btn.textContent = label;
+  }
+}
+$("twoFaSubmit").addEventListener("click", submitTwoFa);
+$("twoFaCode").addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); submitTwoFa(); } });
+$("twoFaCode").addEventListener("input", ()=>{ if(/^\d{6}$/.test($("twoFaCode").value.trim())) submitTwoFa(); });   /* all 6 digits typed: go */
+$("twoFaBack").addEventListener("click", ()=>{ pending2faToken = null; $("twoFaCode").value = ""; showAuthView("main"); });
+
+/* ══════════════════ SETTINGS > SECURITY: password + two-factor authentication ══════════════════ */
+let secStatus = null;       // { hasPassword, twoFactorEnabled, backupCodesRemaining }
+let tfaView = "loading";    // loading | nopw | off | setup | codes | on
+let tfaSecret = "";         // the key shown during setup (cleared as soon as setup ends)
+let tfaCodes = [];          // backup codes shown once
+let tfaActionMode = null;   // "regen" | "disable"
+let secBusy = false;
+const TFA_VIEWS = { loading: "spTfaLoading", nopw: "spTfaNoPw", off: "spTfaOff", setup: "spTfaSetup", codes: "spTfaCodes", on: "spTfaOn" };
+
+function showTfa(view){
+  tfaView = view;
+  Object.keys(TFA_VIEWS).forEach(k => { $(TFA_VIEWS[k]).style.display = (k === view) ? "block" : "none"; });
+}
+function clearTfaSensitive(){
+  tfaSecret = ""; tfaCodes = []; tfaActionMode = null;
+  $("spQr").textContent = ""; $("spSecret").textContent = ""; $("spCodesGrid").textContent = "";
+  ["spTfaCode","spTfaPw","spTfaActPw","spTfaActCode"].forEach(id => { $(id).value = ""; });
+  ["spTfaOffMsg","spTfaSetupMsg","spTfaOnMsg","spTfaActMsg","spCodesMsg"].forEach(id => spMessage(id, "", true));
+  $("spTfaAction").style.display = "none";
+}
+function resetSecurityUI(){
+  secStatus = null; tfaView = "loading"; secBusy = false;
+  clearTfaSensitive();
+  ["spPwCur","spPwNew","spPwNew2"].forEach(id => { $(id).value = ""; });
+  spMessage("spPwMsg", "", true);
+  $("spTfaLoading").textContent = "Loading...";
+  showTfa("loading");
+}
+function renderSecurity(){
+  const s = secStatus;
+  if(!s) return;
+  $("spPwNone").style.display = s.hasPassword ? "none" : "block";
+  $("spPwForm").style.display = s.hasPassword ? "block" : "none";
+  if(tfaView === "setup" || tfaView === "codes") return;      /* never interrupt a setup or hide codes that are still on screen */
+  if(!s.hasPassword){ showTfa("nopw"); return; }
+  if(s.twoFactorEnabled){
+    const n = Number(s.backupCodesRemaining || 0);
+    $("spCodesLeft").textContent = "Backup codes left: " + n + (n <= 2 ? ". Consider making new ones." : "");
+    showTfa("on");
+  } else {
+    showTfa("off");
+  }
+}
+async function loadSecurityStatus(){
+  if(tfaView === "setup" || tfaView === "codes") return;
+  try{
+    secStatus = await apiFetch("/security/status");
+    renderSecurity();
+  }catch(e){
+    showTfa("loading");
+    $("spTfaLoading").textContent = "Could not load your security settings. Please try again in a moment.";
+  }
+}
+function leaveToStatus(){ tfaView = "loading"; clearTfaSensitive(); renderSecurity(); }
+
+/* run a button action once at a time, with a busy label */
+async function secRun(btnId, busyLabel, fn){
+  if(secBusy) return;
+  secBusy = true;
+  const btn = $(btnId), label = btn.textContent;
+  btn.textContent = busyLabel; btn.disabled = true;
+  try{ await fn(); }
+  finally{ secBusy = false; btn.textContent = label; btn.disabled = false; }
+}
+async function copyText(text){
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); return true; } }catch(e){}
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+
+/* ── password ── */
+$("spPwSave").addEventListener("click", ()=>{
+  const cur = $("spPwCur").value, n1 = $("spPwNew").value, n2 = $("spPwNew2").value;
+  if(!cur){ spMessage("spPwMsg", "Enter your current password.", false); return; }
+  if(n1.length < 6 || n1.length > 72){ spMessage("spPwMsg", "New password must be 6-72 characters.", false); return; }
+  if(n1 !== n2){ spMessage("spPwMsg", "The two new passwords do not match.", false); return; }
+  if(n1 === cur){ spMessage("spPwMsg", "Your new password must be different from the current one.", false); return; }
+  secRun("spPwSave", "CHANGING...", async ()=>{
+    spMessage("spPwMsg", "", true);
+    try{
+      const r = await apiFetch("/security/password", { method: "POST", body: JSON.stringify({ currentPassword: cur, newPassword: n1 }) });
+      authToken = r.token;                                   /* this device gets a fresh login; other devices are logged out */
+      localStorage.setItem("axiom_token", r.token);
+      ["spPwCur","spPwNew","spPwNew2"].forEach(id => { $(id).value = ""; });
+      spMessage("spPwMsg", "Password changed. Other devices have been logged out.", true);
+    }catch(e){
+      spMessage("spPwMsg", e.message || "Could not change your password. Please try again.", false);
+    }
+  });
+});
+
+/* ── 2FA: start setup ── */
+function renderQr(url){
+  const box = $("spQr");
+  box.textContent = "";
+  try{
+    if(typeof qrcode !== "function") throw new Error("QR library not loaded");
+    const qr = qrcode(0, "M");
+    qr.addData(url); qr.make();
+    box.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 20, scalable: true });
+  }catch(e){
+    const p = document.createElement("div");
+    p.className = "sp-hint"; p.style.cssText = "padding:14px; color:#555;";
+    p.textContent = "The QR code could not be shown. Type the key next to it into your app instead.";
+    box.appendChild(p);
+  }
+}
+$("spTfaStart").addEventListener("click", ()=>{
+  const pw = $("spTfaPw").value;
+  if(!pw){ spMessage("spTfaOffMsg", "Enter your current password.", false); return; }
+  secRun("spTfaStart", "PLEASE WAIT...", async ()=>{
+    spMessage("spTfaOffMsg", "", true);
+    try{
+      const r = await apiFetch("/security/2fa/setup", { method: "POST", body: JSON.stringify({ password: pw }) });
+      $("spTfaPw").value = "";
+      tfaSecret = r.secret;
+      renderQr(r.otpauthUrl);
+      $("spSecret").textContent = r.secret.replace(/(.{4})/g, "$1 ").trim();
+      showTfa("setup");
+      $("spTfaCode").focus();
+    }catch(e){
+      spMessage("spTfaOffMsg", e.message || "Could not start setup. Please try again.", false);
+    }
+  });
+});
+$("spCopySecret").addEventListener("click", async ()=>{
+  const ok = await copyText(tfaSecret);
+  spMessage("spTfaSetupMsg", ok ? "Key copied." : "Could not copy. Select the key and copy it by hand.", ok);
+});
+$("spTfaCancel").addEventListener("click", leaveToStatus);
+
+/* ── 2FA: confirm the first code → turned on, show backup codes ── */
+function showBackupCodes(codes){
+  tfaCodes = codes.slice();
+  const grid = $("spCodesGrid");
+  grid.textContent = "";
+  tfaCodes.forEach(c => { const el = document.createElement("code"); el.textContent = c; grid.appendChild(el); });
+  spMessage("spCodesMsg", "", true);
+  showTfa("codes");
+}
+$("spTfaVerify").addEventListener("click", ()=>{
+  const code = $("spTfaCode").value.replace(/\s+/g, "");
+  if(!/^\d{6}$/.test(code)){ spMessage("spTfaSetupMsg", "Enter the 6-digit code shown in your app.", false); return; }
+  secRun("spTfaVerify", "CHECKING...", async ()=>{
+    spMessage("spTfaSetupMsg", "", true);
+    try{
+      const r = await apiFetch("/security/2fa/enable", { method: "POST", body: JSON.stringify({ code: code }) });
+      tfaSecret = ""; $("spQr").textContent = ""; $("spSecret").textContent = ""; $("spTfaCode").value = "";
+      secStatus = Object.assign({}, secStatus, { twoFactorEnabled: true, backupCodesRemaining: r.backupCodes.length });
+      showBackupCodes(r.backupCodes);
+    }catch(e){
+      spMessage("spTfaSetupMsg", e.message || "Could not turn on two-factor authentication. Please try again.", false);
+    }
+  });
+});
+$("spTfaCode").addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); $("spTfaVerify").click(); } });
+
+/* ── backup codes: copy / download / done ── */
+$("spCodesCopy").addEventListener("click", async ()=>{
+  const ok = await copyText(tfaCodes.join("\n"));
+  spMessage("spCodesMsg", ok ? "Codes copied." : "Could not copy. Select the codes and copy them by hand.", ok);
+});
+$("spCodesDownload").addEventListener("click", ()=>{
+  const text = "Axiom Trading Journal - backup codes\nAccount: " + (currentUser || "") + "\nCreated: " + new Date().toLocaleString() +
+    "\n\nEach code works once. Keep this file somewhere safe and private.\n\n" + tfaCodes.join("\n") + "\n";
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+  a.download = "axiom-backup-codes-" + (currentUser || "account") + ".txt";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+});
+$("spCodesDone").addEventListener("click", ()=>{
+  if(secStatus) secStatus.backupCodesRemaining = tfaCodes.length;
+  leaveToStatus();
+});
+
+/* ── 2FA on: new backup codes / turn off (both need password + a code) ── */
+function openTfaAction(mode){
+  tfaActionMode = mode;
+  $("spTfaActionHint").textContent = mode === "disable"
+    ? "To turn off two-factor authentication, confirm with your password and a code."
+    : "To make new backup codes, confirm with your password and a code. Your old backup codes will stop working.";
+  $("spTfaActGo").textContent = mode === "disable" ? "TURN OFF 2FA" : "MAKE NEW CODES";
+  spMessage("spTfaActMsg", "", true);
+  $("spTfaAction").style.display = "block";
+  $("spTfaActPw").focus();
+}
+$("spTfaRegen").addEventListener("click", ()=> openTfaAction("regen"));
+$("spTfaOffBtn").addEventListener("click", ()=> openTfaAction("disable"));
+$("spTfaActCancel").addEventListener("click", ()=>{
+  tfaActionMode = null; $("spTfaAction").style.display = "none";
+  $("spTfaActPw").value = ""; $("spTfaActCode").value = ""; spMessage("spTfaActMsg", "", true);
+});
+$("spTfaActGo").addEventListener("click", ()=>{
+  const pw = $("spTfaActPw").value, code = $("spTfaActCode").value.trim();
+  if(!pw){ spMessage("spTfaActMsg", "Enter your current password.", false); return; }
+  if(!code){ spMessage("spTfaActMsg", "Enter a code from your authenticator app, or a backup code.", false); return; }
+  const mode = tfaActionMode;
+  if(!mode) return;
+  if(mode === "disable" && !window.confirm("Turn off two-factor authentication? Your account will be protected by your password only.")) return;
+  secRun("spTfaActGo", "PLEASE WAIT...", async ()=>{
+    spMessage("spTfaActMsg", "", true);
+    try{
+      if(mode === "disable"){
+        await apiFetch("/security/2fa/disable", { method: "POST", body: JSON.stringify({ password: pw, code: code }) });
+        secStatus = Object.assign({}, secStatus, { twoFactorEnabled: false, backupCodesRemaining: 0 });
+        leaveToStatus();
+        spMessage("spTfaOffMsg", "Two-factor authentication is turned off.", true);
+      } else {
+        const r = await apiFetch("/security/2fa/backup-codes", { method: "POST", body: JSON.stringify({ password: pw, code: code }) });
+        $("spTfaActPw").value = ""; $("spTfaActCode").value = ""; $("spTfaAction").style.display = "none"; tfaActionMode = null;
+        showBackupCodes(r.backupCodes);
+      }
+    }catch(e){
+      spMessage("spTfaActMsg", e.message || "Something went wrong. Please try again.", false);
+    }
+  });
+});
 
 (async function initAuthCheck(){
   if(pendingResetToken) return;   /* opened from a reset email — stay on the reset screen */
